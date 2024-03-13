@@ -1,0 +1,86 @@
+# MetaNER-ICL
+
+- An implementation for LREC-COLING 2024 paper [Few-shot Named Entity Recognition via Superposition Concept Discrimination](http://arxiv.org/abs/2305.11038)
+
+## Quick links
+
+* [Environment](#Environment)
+* [Model](#model)
+* [Data](#data)
+* [Active Learning](#active-learning)
+
+### Environment
+
+```bash
+conda create -n supercd python=3.9.0
+conda activate supercd
+bash env.sh
+```
+### Model
+
+The pre-trained models are in huggingface: [metaner](https://huggingface.co/jiawei1998/metaner) and [metaner-base](https://huggingface.co/jiawei1998/metaner-base) 
+
+The pre-trained dataset is in [huggingface](https://huggingface.co/datasets/jiawei1998/metaner-pretraindata)
+
+We use one A100-80g to pre-train the t5-v1_1-large and you can run:
+
+```bash
+python pretrain.py --plm google/t5-v1_1-large --do_train --per_device_train_batch_size 8 --learning_rate 5e-5 \
+--logging_step 1000 \
+--output_dir plm/metaner \
+--evaluation_strategy steps \
+--do_eval \
+--per_device_eval_batch_size 32 \
+--metric_for_best_model f1 \
+--eval_steps 10000 \
+--max_steps 500000 \
+--save_steps 10000 \
+--lr_scheduler_type constant_with_warmup \
+--warmup_steps 10000 \
+--save_total_limit 50 \
+--remove_unused_columns False \
+--dataset pretrain_data 
+```
+The pretraining dataset should be putted in path `pretrain_data/`
+```text
+pretrain_data/
+├── ICL_train.json
+├── ICL_dev.json
+├── label2id.json
+├── code2name.json
+└── lmtrain.json
+```
+where ICL_train.json and ICL_dev.json are the NER dataset from wikipedia and wikidata, label2id.json is used for ner pre-training, code2name.json is the wikidata code and label name mapping file, lmtrain.json is used for pseudo extraction language modeling task.
+
+### Active Learning
+You can run:
+```bash
+python predictor.py --output_dir tmp/conll03/metaner-icl \
+--plm plm/metaner \
+--formatsconfig config/formats/metaner.yaml \
+--testset data/conll03 \
+--do_predict \
+--remove_unused_columns False \
+--shot_num 5 \
+--per_device_eval_batch_size 16
+```
+The result will be in output_dir. You can change the `shot_num` for different shot and `testset` for different dataset.
+
+For different pre-trained model, you should change `plm` and `formatsconfig`.
+
+For t5 model, you can change the formatsconfig to `config/formats/t5.yaml`. For gpt/opt model, you can change the formatsconfig to `config/formats/gpt.yaml/config/formats/opt.yaml`.
+
+## License
+
+The code is released under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License for Noncommercial use only. Any commercial use should get formal permission first.
+
+Shield: [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+
+This work is licensed under a
+[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
