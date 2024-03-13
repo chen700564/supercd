@@ -1,0 +1,6 @@
+person
+location
+group
+corporation
+product
+creative_work
