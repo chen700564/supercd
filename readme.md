@@ -1,4 +1,4 @@
-# MetaNER-ICL
+# SuperCD
 
 - An implementation for LREC-COLING 2024 paper [Few-shot Named Entity Recognition via Superposition Concept Discrimination](http://arxiv.org/abs/2305.11038)
 
