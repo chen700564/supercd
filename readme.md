@@ -6,7 +6,6 @@
 
 * [Environment](#Environment)
 * [Model](#model)
-* [Data](#data)
 * [Active Learning](#active-learning)
 
 ### Environment
@@ -18,57 +17,36 @@ bash env.sh
 ```
 ### Model
 
-The pre-trained models are in huggingface: [metaner](https://huggingface.co/jiawei1998/metaner) and [metaner-base](https://huggingface.co/jiawei1998/metaner-base) 
-
-The pre-trained dataset is in [huggingface](https://huggingface.co/datasets/jiawei1998/metaner-pretraindata)
-
-We use one A100-80g to pre-train the t5-v1_1-large and you can run:
-
-```bash
-python pretrain.py --plm google/t5-v1_1-large --do_train --per_device_train_batch_size 8 --learning_rate 5e-5 \
---logging_step 1000 \
---output_dir plm/metaner \
---evaluation_strategy steps \
---do_eval \
---per_device_eval_batch_size 32 \
---metric_for_best_model f1 \
---eval_steps 10000 \
---max_steps 500000 \
---save_steps 10000 \
---lr_scheduler_type constant_with_warmup \
---warmup_steps 10000 \
---save_total_limit 50 \
---remove_unused_columns False \
---dataset pretrain_data 
-```
-The pretraining dataset should be putted in path `pretrain_data/`
-```text
-pretrain_data/
-├── ICL_train.json
-├── ICL_dev.json
-├── label2id.json
-├── code2name.json
-└── lmtrain.json
-```
-where ICL_train.json and ICL_dev.json are the NER dataset from wikipedia and wikidata, label2id.json is used for ner pre-training, code2name.json is the wikidata code and label name mapping file, lmtrain.json is used for pseudo extraction language modeling task.
+The pre-trained models are in huggingface: [SIR](https://huggingface.co/jiawei1998/SIR) and [CE](https://huggingface.co/jiawei1998/CE) 
 
 ### Active Learning
 You can run:
 ```bash
-python predictor.py --output_dir tmp/conll03/metaner-icl \
---plm plm/metaner \
---formatsconfig config/formats/metaner.yaml \
---testset data/conll03 \
---do_predict \
---remove_unused_columns False \
---shot_num 5 \
---per_device_eval_batch_size 16
+python main.py --output_dir output_dir \
+--dataset ${dataset} \
+--plm bert-base-uncased \
+--plmpath bert-base-uncased \
+--modelname tagmodel \
+--per_device_train_batch_size 4 \
+--do_train \
+--shot 5 \
+--maxshot 5 \
+--save_strategy no \
+--num_train_epochs 10 \
+--learning_rate 1e-4 \
+--warmup_ratio 0.1 \
+--active supercd \
+--save_total_limit 1 
 ```
-The result will be in output_dir. You can change the `shot_num` for different shot and `testset` for different dataset.
+The result will be in output_dir. You can change the `shot` for different shot and `maxshot` is the additional shot for active learning.
 
-For different pre-trained model, you should change `plm` and `formatsconfig`.
+For different pre-trained model, you should change `plm` and `plmpath`.
 
-For t5 model, you can change the formatsconfig to `config/formats/t5.yaml`. For gpt/opt model, you can change the formatsconfig to `config/formats/gpt.yaml/config/formats/opt.yaml`.
+For different base model, you can change `modelname` (tagmodel, structshot, proto, sdnet or container)
+
+`num_train_epochs` is set to 50 for sdnet and 10 for other models.
+
+`learning_rate` si set to 5e-5 for container and 1e-4 for other models.
 
 ## License
 
