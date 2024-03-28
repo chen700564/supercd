@@ -109,7 +109,6 @@ def getsample(datasets,results,entities,repeat=False, num =500):
         index[label] = []
         for concept in results[label]:
             index[label] += [[i[0],idx,concept,i[-1]] for idx,i in  enumerate(results[label][concept][:num]) if i[1] > 0] 
-            # index[label] += [[i[0],-i[1],concept] for idx,i in  enumerate(results[label][concept][:num]) if i[1] > 0] 
         index[label] = sorted(index[label],key=lambda k:k[1])
     indexs = []
     usedtokens = []
@@ -172,13 +171,11 @@ def conceptobaining(supportresult,concept_mapping,maxrate,withfilter=True):
 
                 if concept not in stats[entityresult[0][1]]['related_concepts']:
                     stats[entityresult[0][1]]['related_concepts'][concept] = copy.deepcopy(concepts)
-                    # stats[entityresult[0][1]]['related_concepts'][concept] = concepts
                 else:
                     for i in concepts:
                         if i not in stats[entityresult[0][1]]['related_concepts'][concept]:
                             stats[entityresult[0][1]]['related_concepts'][concept].append(i)
                 
-                    # stats[entityresult[0][1]]['related_concepts'][concept] = list(set(stats[entityresult[0][1]]['related_concepts'][concept] + concepts))
                 if concept not in vocab:
                     vocab.append(concept)
                     for label in stats:
@@ -204,7 +201,7 @@ def conceptobaining(supportresult,concept_mapping,maxrate,withfilter=True):
     full_common = [i for i in inter_common]
     inter_common = [i for i in inter_common if inter_common[i] > 1]
     
-    # inter_common = []
+
     for label in concept_mapping:
         common = concept_mapping[label]['common']
         unique = concept_mapping[label]['unique']
@@ -260,17 +257,7 @@ def activeconceptpicker(supportresult,concept_mapping, baned):
                         continue
                     stats[label][concept]['related_concepts'].append(i)
     
-    '''
-    先从类别内部挑选概念，满足任意条件
-    （1）出现次数大于1
-    （2）共现的概念出现次数大于1
 
-    
-    过滤：根据出现次数给概念打分，并需要减去在其它类别中出现的最大次数，保留大于0的
-    打分：最终出现次数作为得分
-
-    于是得到每个类别对应的概念集合
-    '''
     accepted_labels = {}
     labelscores = {}
     scores = {}
@@ -302,7 +289,7 @@ def activeconceptpicker(supportresult,concept_mapping, baned):
             score = score - maxotherscore
             scores[label][concept] = score
     
-    # 按照得分排列concept
+
     sorted_accepted_labels = {}
     for label in labelscores:
         sorted_accepted_labels[label] = [accepted_labels[label][i] for i in np.argsort(np.array(labelscores[label]))]
@@ -323,7 +310,6 @@ def getsample2(datasets,results,entities,repeat=False):
     index = {}
     num = 500
     labelindex = {}
-    # 根据最高得分给results排序
     sortedresults = {}
     for label in results:
         sortedresults[label] = {}
@@ -339,7 +325,6 @@ def getsample2(datasets,results,entities,repeat=False):
         index[label] = []
         for concept in results[label]:
             index[label] += [[i[0],idx,concept,i[-1]] for idx,i in  enumerate(results[label][concept][:num]) if i[1] > 0] 
-            # index[label] += [[i[0],-i[1],concept] for idx,i in  enumerate(results[label][concept][:num]) if i[1] > 0] 
         index[label] = sorted(index[label],key=lambda k:k[1])
     indexs = []
     usedtokens = []
@@ -347,8 +332,6 @@ def getsample2(datasets,results,entities,repeat=False):
         for label in index:
             flag = True
             cnum = 1
-            # if index[label][labelindex[label]][3] == 'common':
-            #     cnum = 5
             for j in range(cnum):
                 while flag:
                     if len(index[label]) <= labelindex[label]:
@@ -373,8 +356,6 @@ def getsample2(datasets,results,entities,repeat=False):
                             indexs.append([index[label][labelindex[label]][0],label,removed])
                             usedtokens.append(tokens)
                             flag = False
-                    # elif tokens in usedtokens:
-                    #     flag = False
                     labelindex[label] += 1
     picked = []
 
