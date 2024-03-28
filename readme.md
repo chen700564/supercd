@@ -46,7 +46,7 @@ For different base model, you can change `modelname` (tagmodel, structshot, prot
 
 `num_train_epochs` is set to 50 for sdnet and 10 for other models.
 
-`learning_rate` si set to 5e-5 for container and 1e-4 for other models.
+`learning_rate` is set to 5e-5 for container and 1e-4 for other models.
 
 ## License
 
